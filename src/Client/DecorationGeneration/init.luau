@@ -1,0 +1,91 @@
+--!native
+--!optimize 2
+--!strict
+--#region Services
+local _RunService = game:GetService("RunService")
+-- local Players = game:GetService("Players")
+--#endregion
+
+--#region Packages
+local Zap = require(script.Parent.ZapClient)
+--#endregion
+
+--#region Features
+local PickupZoneHandler = require(script.Parent.PickupZoneHandler)
+--#endregion
+
+--#region Data
+local playerStats = require(script.Parent.PlayerStats)
+--#endregion
+
+--#region Types
+--#endregion
+
+--#region Variables
+local GenArea = workspace:WaitForChild("GenArea")
+local decorationCount = 0
+local decorationList = {}
+local lastUsed = 0
+--#endregion
+
+--#region Function Declerations
+local GenerateDecoration: (position: Vector3) -> Part
+local UpdateDecoration: (dt: number) -> ()
+--#endregion
+
+--#region Functions
+UpdateDecoration = function(dt: number)
+	local genAreaSize = GenArea.Size
+	local genAreaPosition = GenArea.Position
+	lastUsed += dt
+	if lastUsed < playerStats.Interval.StatValue then
+		return
+	end
+	lastUsed -= playerStats.Interval.StatValue
+	if decorationCount < playerStats.MaxDecorations.StatValue then
+		local randomX = math.random(genAreaPosition.X - genAreaSize.X / 2, genAreaPosition.X + genAreaSize.X / 2)
+		local randomZ = math.random(genAreaPosition.Z - genAreaSize.Z / 2, genAreaPosition.Z + genAreaSize.Z / 2)
+		local randomY = math.random(genAreaPosition.Y - genAreaSize.Y / 2, genAreaPosition.Y + genAreaSize.Y / 2)
+
+		local randomPosition = Vector3.new(randomX, randomY, randomZ)
+
+		local decoration = GenerateDecoration(randomPosition)
+		decoration.Parent = GenArea
+		decorationCount += 1
+	end
+end
+
+GenerateDecoration = function(position: Vector3)
+	local decoration = Instance.new("Part")
+	decoration.Size = Vector3.new(4, 4, 4)
+	decoration.Position = position + Vector3.yAxis * 2
+	decoration.Anchored = true
+	decoration.CanCollide = false
+	decoration.Material = Enum.Material.Grass
+	decoration.Shape = Enum.PartType.Ball
+	decoration.Color = Color3.fromRGB(0, 255, 0)
+	decorationList[decoration] = true
+	local pickupZone = PickupZoneHandler.getPickupZone()
+	local touchedConnection: RBXScriptConnection? = nil
+	touchedConnection = decoration.Touched:Connect(function(hit)
+		if hit == pickupZone then
+			if touchedConnection then
+				touchedConnection:Disconnect()
+			end
+			decorationList[decoration] = nil
+			decorationCount -= 1
+
+			Zap.pickupDecoration.Fire()
+
+			decoration:Destroy()
+		end
+	end)
+	return decoration
+end
+
+--#endregion
+
+return table.freeze({
+	UpdateDecoration = UpdateDecoration,
+	GenerateDecoration = GenerateDecoration,
+})

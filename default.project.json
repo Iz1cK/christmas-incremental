@@ -1,0 +1,51 @@
+{
+  "name": "Christmas-Incremental",
+  "tree": {
+        "$className": "DataModel",
+
+        "Workspace": {
+            "$path": "Assets/Workspace"
+        },
+
+        "StarterGui": {
+            "$path": "Assets/StarterGui"
+        },
+
+        "ReplicatedStorage": {
+        "$className": "ReplicatedStorage",
+            "Features":{
+                "$path": "src/Shared"
+            },
+            "Packages": {
+                "$path": "Packages"
+            },
+            "Helpers": {
+                "$path": "src/Helpers"
+            },
+            "Data": {
+                "$path": "src/Data"
+            },
+            "Types":{
+                "$path": "src/Types"
+            }
+        },
+
+        "ServerScriptService": {
+            "$className": "ServerScriptService",
+            "Features":{
+                "$path": "src/Server/"
+            }
+        },
+
+        "StarterPlayer": {
+            "$className": "StarterPlayer",
+            
+            "StarterPlayerScripts": {
+                "$className": "StarterPlayerScripts",
+                "Features": {
+                    "$path": "src/Client"
+                }
+            }
+        }
+    }
+}
