@@ -13,7 +13,9 @@ local Zap = require(script.Parent.ZapServer)
 local UpgradeTierHandler = require(script.Parent.UpgradeTierHandler)
 local PlayerStats = require(script.Parent.PlayerStats)
 local DataStore = require(script.Parent.DataStore)
-local PlayerTierData = require(ReplicatedStorage.Data.PlayerTierData)
+-- local StatsTypes = require(ReplicatedStorage.Types.StatsTypes)
+local DatabaseTypes = require(ReplicatedStorage.Types.DatabaseTypes)
+-- local DecorationsData = require(ReplicatedStorage.Data.DecorationStats)
 --#endregion
 
 --#region Data
@@ -28,13 +30,14 @@ local PlayerTierData = require(ReplicatedStorage.Data.PlayerTierData)
 Players.PlayerAdded:Connect(function(player: Player)
 	--loading screen here
 	local document = DataStore.loadPlayerStats(player)
-	local data = document:read()
+	local data: DatabaseTypes.DatabaseTypesTable = document:read()
 	if data == nil then
-		data = table.clone(PlayerTierData)
+		data = table.clone(DatabaseTypes)
 	end
 	PlayerStats.initPlayerStats(player, data)
+	print("data:", data)
 	--end loading screen here
-	CurrencyHandler.InitPlayer(player, data.Currency)
+	CurrencyHandler.InitPlayer(player, data["Currency"])
 	Zap.finishPlayerLoading.Fire(player, data)
 end)
 
@@ -60,6 +63,10 @@ end)
 
 Zap.purchaseMaxDecorationsUpgrade.On(function(player: Player)
 	UpgradeTierHandler.handleMaxDecorationsUpgrade(player)
+end)
+
+Zap.purchasePickupRangeUpgrade.On(function(player: Player)
+	UpgradeTierHandler.handlePickupRangeUpgrade(player)
 end)
 
 --#endregion

@@ -13,7 +13,6 @@ local DataStore = require(script.Parent.DataStore)
 --#endregion
 
 --#region Data
-local playerCurrencies: { [Player]: number } = {}
 local PlayerStats = require(script.Parent.PlayerStats)
 --#endregion
 
@@ -41,40 +40,38 @@ local calculateSpheres: (multiplier: number) -> number
 calculateSpheres = function(multiplier)
 	-- Guaranteed spheres are based on the integer part of the multiplier
 	local guaranteedSpheres = multiplier // 1
-
 	-- Extra chance is determined by the decimal part
 	local extraChance = (multiplier % guaranteedSpheres)
-
 	-- Calculate how many extra spheres to give based on the extra chance
 	local extraSpheres = math.random(0, 1) < extraChance and 1 or 0
-
+	-- Return the total amount of spheres
 	return guaranteedSpheres + extraSpheres
 end
 
 CurrencyHandler = function(player: Player)
-	local currency = playerCurrencies[player]
 	local playerStats = PlayerStats.getPlayerStats(player)
-	if currency then
-		playerCurrencies[player] += calculateSpheres(playerStats[StatsTypes.Multiplier].StatValue)
-	else
-		playerCurrencies[player] = 1
-	end
-	local data = { currentCurrency = playerCurrencies[player] }
-	playerStats[StatsTypes.Currency]:Change(playerCurrencies[player])
-	DataStore.savePlayerStats(player, PlayerStats.getPlayerTierDataFromStats(player))
+	playerStats[StatsTypes.Currency]:ChangeValue(
+		playerStats[StatsTypes.Currency].FinalValue + calculateSpheres(playerStats[StatsTypes.Multiplier].FinalValue)
+	)
+	local data = { currentCurrency = playerStats[StatsTypes.Currency].FinalValue }
+	local stats = PlayerStats.getDataFromStats(playerStats)
+	DataStore.savePlayerStats(player, stats)
 	Zap.updateCurrency.Fire(player, data)
 end
 
 InitPlayer = function(player: Player, currency: number)
-	playerCurrencies[player] = currency or 0
+	local playerStats = PlayerStats.getPlayerStats(player)
+	playerStats[StatsTypes.Currency]:ChangeValue(currency)
 end
 
 GetPlayerCurrency = function(player: Player)
-	return playerCurrencies[player]
+	local playerStats = PlayerStats.getPlayerStats(player)
+	return playerStats[StatsTypes.Currency].FinalValue
 end
 
 SetPlayerCurrency = function(player: Player, currency: number)
-	playerCurrencies[player] = currency
+	local playerStats = PlayerStats.getPlayerStats(player)
+	playerStats[StatsTypes.Currency]:ChangeValue(currency)
 end
 --#endregion
 

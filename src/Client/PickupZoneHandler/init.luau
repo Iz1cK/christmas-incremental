@@ -3,27 +3,29 @@
 --!strict
 --#region Services
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --#endregion
 
 --#region Packages
 --#endregion
 
 --#region Features
+local PlayerTiers = require(script.Parent.PlayerTiers)
+local StatTypes = require(ReplicatedStorage.Types.StatsTypes)
 --#endregion
 
 --#region Data
-local playerStats = require(script.Parent.PlayerStats)
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local primaryPart = character.PrimaryPart or character:WaitForChild("HumanoidRootPart")
 --#endregion
 
 --#region Types
 --#endregion
 
 --#region Variables
-local pickupRange = playerStats.PickupRange.StatValue or 10
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local primaryPart = character.PrimaryPart or character:WaitForChild("HumanoidRootPart")
+local pickupRange = PlayerTiers[StatTypes.PickupRange].FinalValue or 10
 local squarePart: Part = nil
 local weld: WeldConstraint = nil
 --#endregion
@@ -73,7 +75,7 @@ end
 
 updatePickupZone = function()
 	if squarePart then
-		pickupRange = playerStats.PickupRange.StatValue
+		pickupRange = PlayerTiers[StatTypes.PickupRange].FinalValue
 		-- Update the size of the square
 		squarePart.Size = Vector3.new(pickupRange, 1, pickupRange)
 	end

@@ -15,11 +15,10 @@ export type StatsObject = StatsObject.Stat
 local StatsTypes = require(ReplicatedStorage.Types.StatsTypes)
 export type StatsTypes = StatsTypes.StatsTypes
 
-local PlayerTierData = require(ReplicatedStorage.Data.PlayerTierData)
+local DatabaseTypes = require(ReplicatedStorage.Types.DatabaseTypes)
 --#endregion
 
 --#region Data
-local decorationsStats = require(ReplicatedStorage.Data.DecorationStats)
 --#endregion
 
 --#region Types
@@ -34,67 +33,66 @@ local allPlayersData: { [Player]: playerData } = {}
 --#endregion
 
 --#region Function Declerations
-local initPlayerStats: (player: Player, data: PlayerTierData.PlayerTierData) -> ()
+local initPlayerStats: (player: Player, data: DatabaseTypes.DatabaseTypesTable) -> ()
 local getPlayerStats: (player: Player) -> playerData
-local getPlayerTierDataFromStats: (player: Player) -> PlayerTierData.PlayerTierData
+local getStats: (player: Player) -> StatsTypes.StatsTypesTable
+local updateStats: (player: Player, data: playerData) -> ()
+local getStatsFromData: (data: DatabaseTypes.DatabaseTypesTable) -> playerData
+local getDataFromStats: (data: playerData) -> DatabaseTypes.DatabaseTypesTable
 --#endregion
 
 --#region Functions
-initPlayerStats = function(player: Player, data: PlayerTierData.PlayerTierData)
+initPlayerStats = function(player: Player, data: DatabaseTypes.DatabaseTypesTable)
 	local playerData: playerData = {}
-	print("data:", data)
 	for key: string, value: number in pairs(data) do
-		if key == "Currency" then
-			playerData[StatsTypes[key]] = StatsObject.new(key, value)
-			continue
-		end
-		playerData[StatsTypes[key]] = StatsObject.new(key, decorationsStats[value][key].Upgrade)
+		playerData[StatsTypes[key]] = StatsObject.new(key, value)
 	end
-	print(playerData)
 	allPlayersData[player] = playerData
-end
-
-local function findUpgradeTier(input)
-	-- Extract upgrade type and value from input
-	local upgradeType = input.StatsName
-	local upgradeValue = input.StatValue
-	-- Iterate through all the tiers (keys)
-	for tier, upgrades in pairs(decorationsStats) do
-		-- Check if the specific upgradeType exists in the current tier
-		local upgrade = upgrades[upgradeType]
-		if upgrade and upgrade.Upgrade == upgradeValue then
-			-- Return the tier if we find a match
-			return tier
-		end
-	end
-
-	-- Return nil if no match was found
-	return -1
 end
 
 getPlayerStats = function(player: Player): playerData
 	return allPlayersData[player]
 end
 
-getPlayerTierDataFromStats = function(player: Player): PlayerTierData.PlayerTierData
-	local playerData: { [StatsTypes]: StatsObject } = getPlayerStats(player)
-	print("playerData:", playerData)
-	local playerTierData: PlayerTierData.PlayerTierData = table.clone(PlayerTierData)
-	for key, value in pairs(playerData) do
-		if key == StatsTypes.Currency then
-			playerTierData[key.type] = value.StatValue
-			continue
-		end
-		playerTierData[key.type] = findUpgradeTier(value)
+getStats = function(player: Player): StatsTypes.StatsTypesTable
+	local playerData = allPlayersData[player]
+	local stats: StatsTypes.StatsTypesTable = {}
+	for key: StatsTypes, value: StatsObject in pairs(playerData) do
+		stats[key.type] = StatsTypes[value.StatsName]
 	end
-	print("playerTierData:", playerTierData)
-	return playerTierData
+	return stats
 end
---#endregion
+
+updateStats = function(player: Player, data: playerData)
+	allPlayersData[player] = data
+end
+
+getStatsFromData = function(data: DatabaseTypes.DatabaseTypesTable): playerData
+	local playerData: playerData = {}
+	for key: string, value: number in pairs(data) do
+		playerData[StatsTypes[key]] = StatsObject.new(key, value)
+	end
+	return playerData
+end
+
+getDataFromStats = function(data: playerData): DatabaseTypes.DatabaseTypesTable
+	local stats: DatabaseTypes.DatabaseTypesTable = {}
+	for key: StatsTypes, value: StatsObject in pairs(data) do
+		if key.type == "Currency" then
+			stats[key.type] = value.FinalValue
+		else
+			stats[key.type] = value.StatTier
+		end
+	end
+	return stats
+end
 
 return table.freeze({
 	initPlayerStats = initPlayerStats,
 	StatsTypes = StatsTypes,
 	getPlayerStats = getPlayerStats,
-	getPlayerTierDataFromStats = getPlayerTierDataFromStats,
+	getStats = getStats,
+	updateStats = updateStats,
+	getStatsFromData = getStatsFromData,
+	getDataFromStats = getDataFromStats,
 })

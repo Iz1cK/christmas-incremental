@@ -17,8 +17,6 @@ local DataStore = require(script.Parent.DataStore)
 --#endregion
 
 --#region Data
-local PlayerTierData = require(ReplicatedStorage.Data.PlayerTierData)
-local playerTiers: { [Player]: PlayerTierData.PlayerTierData } = {}
 --#endregion
 
 --#region Types
@@ -37,21 +35,15 @@ local handlePickupRangeUpgrade: (player: Player) -> ()
 
 --#region Functions
 handleIntervalUpgrade = function(player: Player)
-	if not playerTiers[player] then
-		playerTiers[player] = table.clone(PlayerTierData)
-	end
-	if not playerTiers[player]["Interval"] then
-		playerTiers[player]["Interval"] = 0
-	end
 	local playerStats = PlayerStats.getPlayerStats(player)
-	local currentTier = playerTiers[player]["Interval"]
 	local currency = CurrencyHandler.GetPlayerCurrency(player)
+	local currentTier = playerStats[PlayerStats.StatsTypes.Interval].StatTier :: number
 	local cost = decorationsData[currentTier + 1]["Interval"]["Cost"]
 	if currency >= cost then
 		CurrencyHandler.SetPlayerCurrency(player, currency - cost)
-		playerTiers[player]["Interval"] = currentTier + 1
-		playerStats[PlayerStats.StatsTypes.Interval]:Change(decorationsData[currentTier + 1].Interval.Upgrade)
-		DataStore.savePlayerStats(player, playerTiers[player])
+		playerStats[PlayerStats.StatsTypes.Interval]:ChangeValueByTier(currentTier + 1)
+		local stats = PlayerStats.getDataFromStats(playerStats)
+		DataStore.savePlayerStats(player, stats)
 		Zap.updateIntervalText.Fire(player, { tier = currentTier + 1, currentCurrency = currency - cost })
 		warn(player.Name .. " purchased an interval upgrade")
 	else
@@ -60,21 +52,15 @@ handleIntervalUpgrade = function(player: Player)
 end
 
 handleMoveSpeedUpgrade = function(player: Player)
-	if not playerTiers[player] then
-		playerTiers[player] = table.clone(PlayerTierData)
-	end
-	if not playerTiers[player]["MoveSpeed"] then
-		playerTiers[player]["MoveSpeed"] = 0
-	end
 	local playerStats = PlayerStats.getPlayerStats(player)
-	local currentTier = playerTiers[player]["MoveSpeed"]
+	local currentTier = playerStats[PlayerStats.StatsTypes.MoveSpeed].StatTier :: number
 	local currency = CurrencyHandler.GetPlayerCurrency(player)
 	local cost = decorationsData[currentTier + 1]["MoveSpeed"]["Cost"]
 	if currency >= cost then
 		CurrencyHandler.SetPlayerCurrency(player, currency - cost)
-		playerTiers[player]["MoveSpeed"] = currentTier + 1
-		playerStats[PlayerStats.StatsTypes.MoveSpeed]:Change(decorationsData[currentTier + 1].MoveSpeed.Upgrade)
-		DataStore.savePlayerStats(player, playerTiers[player])
+		playerStats[PlayerStats.StatsTypes.MoveSpeed]:ChangeValueByTier(currentTier + 1)
+		local stats = PlayerStats.getDataFromStats(playerStats)
+		DataStore.savePlayerStats(player, stats)
 		Zap.updateMoveSpeedText.Fire(player, { tier = currentTier + 1, currentCurrency = currency - cost })
 		warn(player.Name .. " purchased an movement speed upgrade")
 	else
@@ -83,21 +69,15 @@ handleMoveSpeedUpgrade = function(player: Player)
 end
 
 handleMultiplierUpgrade = function(player: Player)
-	if not playerTiers[player] then
-		playerTiers[player] = table.clone(PlayerTierData)
-	end
-	if not playerTiers[player]["Multiplier"] then
-		playerTiers[player]["Multiplier"] = 0
-	end
-	local currentTier = playerTiers[player]["Multiplier"]
+	local playerStats = PlayerStats.getPlayerStats(player)
+	local currentTier = playerStats[PlayerStats.StatsTypes.Multiplier].StatTier :: number
 	local currency = CurrencyHandler.GetPlayerCurrency(player)
 	local cost = decorationsData[currentTier + 1]["Multiplier"]["Cost"]
-	local playerStats = PlayerStats.getPlayerStats(player)
 	if currency >= cost then
 		CurrencyHandler.SetPlayerCurrency(player, currency - cost)
-		playerTiers[player]["Multiplier"] = currentTier + 1
-		playerStats[PlayerStats.StatsTypes.Multiplier]:Change(decorationsData[currentTier + 1].Multiplier.Upgrade)
-		DataStore.savePlayerStats(player, playerTiers[player])
+		playerStats[PlayerStats.StatsTypes.Multiplier]:ChangeValueByTier(currentTier + 1)
+		local stats = PlayerStats.getDataFromStats(playerStats)
+		DataStore.savePlayerStats(player, stats)
 		Zap.updateMultiplierText.Fire(player, { tier = currentTier + 1, currentCurrency = currency - cost })
 		warn(player.Name .. " purchased a multiplier upgrade")
 	else
@@ -106,24 +86,15 @@ handleMultiplierUpgrade = function(player: Player)
 end
 
 handleMaxDecorationsUpgrade = function(player: Player)
-	if not playerTiers[player] then
-		playerTiers[player] = table.clone(PlayerTierData)
-	end
-	if not playerTiers[player]["MaxDecorations"] then
-		playerTiers[player]["MaxDecorations"] = 0
-	end
 	local playerStats = PlayerStats.getPlayerStats(player)
-	local currentTier = playerTiers[player]["MaxDecorations"]
+	local currentTier = playerStats[PlayerStats.StatsTypes.MaxDecorations].StatTier :: number
 	local currency: number = CurrencyHandler.GetPlayerCurrency(player)
 	local cost: number = decorationsData[currentTier + 1]["MaxDecorations"]["Cost"]
 	if currency >= cost then
 		CurrencyHandler.SetPlayerCurrency(player, currency - cost)
-		-- print(playerTiers[player])
-		playerTiers[player]["MaxDecorations"] = currentTier + 1
-		playerStats[PlayerStats.StatsTypes.MaxDecorations]:Change(
-			decorationsData[currentTier + 1].MaxDecorations.Upgrade
-		)
-		DataStore.savePlayerStats(player, playerTiers[player])
+		playerStats[PlayerStats.StatsTypes.MaxDecorations]:ChangeValueByTier(currentTier + 1)
+		local stats = PlayerStats.getDataFromStats(playerStats)
+		DataStore.savePlayerStats(player, stats)
 		Zap.updateMaxDecorationsText.Fire(player, { tier = currentTier + 1, currentCurrency = currency - cost })
 		warn(player.Name .. " purchased a max decoration upgrade")
 	else
@@ -132,21 +103,15 @@ handleMaxDecorationsUpgrade = function(player: Player)
 end
 
 handlePickupRangeUpgrade = function(player: Player)
-	if not playerTiers[player] then
-		playerTiers[player] = table.clone(PlayerTierData)
-	end
-	if not playerTiers[player]["PickupRange"] then
-		playerTiers[player]["PickupRange"] = 0
-	end
 	local playerStats = PlayerStats.getPlayerStats(player)
-	local currentTier = playerTiers[player]["PickupRange"]
+	local currentTier = playerStats[PlayerStats.StatsTypes.PickupRange].StatTier :: number
 	local currency = CurrencyHandler.GetPlayerCurrency(player)
 	local cost = decorationsData[currentTier + 1]["PickupRange"]["Cost"]
 	if currency >= cost then
 		CurrencyHandler.SetPlayerCurrency(player, currency - cost)
-		playerTiers[player]["PickupRange"] = currentTier + 1
-		playerStats[PlayerStats.StatsTypes.PickupRange]:Change(decorationsData[currentTier + 1].PickupRange.Upgrade)
-		DataStore.savePlayerStats(player, playerTiers[player])
+		playerStats[PlayerStats.StatsTypes.PickupRange]:ChangeValueByTier(currentTier + 1)
+		local stats = PlayerStats.getDataFromStats(playerStats)
+		DataStore.savePlayerStats(player, stats)
 		Zap.updatePickupRangeText.Fire(player, { tier = currentTier + 1, currentCurrency = currency - cost })
 		warn(player.Name .. " purchased a pickup range upgrade")
 	else
@@ -161,5 +126,4 @@ return table.freeze({
 	handleMultiplierUpgrade = handleMultiplierUpgrade,
 	handleMaxDecorationsUpgrade = handleMaxDecorationsUpgrade,
 	handlePickupRangeUpgrade = handlePickupRangeUpgrade,
-	playerTiers = playerTiers,
 })

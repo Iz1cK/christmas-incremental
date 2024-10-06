@@ -11,17 +11,19 @@ local ReplicaService = game:GetService("ReplicatedStorage")
 --#region Features
 local StatsObject = require(ReplicaService.Features.StatsObject)
 
+local StatsTypes = require(ReplicaService.Types.StatsTypes)
+
 export type StatsObject = StatsObject.Stat
 --#endregion
 
 --#region Data
-local playerData: { [string]: StatsObject } = {
-	["Currency"] = StatsObject.new("Currency", 0),
-	["Interval"] = StatsObject.new("Interval", 2),
-	["MoveSpeed"] = StatsObject.new("MoveSpeed", 16),
-	["Multiplier"] = StatsObject.new("Multiplier", 1.0),
-	["MaxDecorations"] = StatsObject.new("MaxDecorations", 5),
-	["PickupRange"] = StatsObject.new("PickupRange", 10),
+local playerData: { [StatsTypes.StatsTypes]: StatsObject } = {
+	[StatsTypes.Currency] = StatsObject.new("Currency", 0),
+	[StatsTypes.Interval] = StatsObject.new("Interval", 0),
+	[StatsTypes.MoveSpeed] = StatsObject.new("MoveSpeed", 0),
+	[StatsTypes.Multiplier] = StatsObject.new("Multiplier", 0),
+	[StatsTypes.MaxDecorations] = StatsObject.new("MaxDecorations", 0),
+	[StatsTypes.PickupRange] = StatsObject.new("PickupRange", 0),
 }
 --#endregion
 
