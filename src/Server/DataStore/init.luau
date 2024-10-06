@@ -14,7 +14,8 @@ local Lapis = require(ReplicatedStorage.Packages.Lapis)
 
 --#region Data
 -- local playerData = require(script.Parent.PlayerStats)
-local defaulDataType = require(ReplicatedStorage.Data.PlayerTierData)
+-- local StatsTypes = require(ReplicatedStorage.Types.StatsTypes)
+local DatabaseTypes = require(ReplicatedStorage.Types.DatabaseTypes)
 --#endregion
 
 --#region Types
@@ -24,7 +25,7 @@ local defaulDataType = require(ReplicatedStorage.Data.PlayerTierData)
 --#region Variables
 
 local collection = Lapis.createCollection("PlayerData", {
-	defaultData = defaulDataType,
+	defaultData = DatabaseTypes,
 })
 
 local documents = {}
@@ -32,14 +33,14 @@ local documents = {}
 --#endregion
 
 --#region Function Declerations
-local savePlayerStats: (player: Player, data: defaulDataType.PlayerTierData) -> ()
-local loadPlayerStats: (player: Player) -> Lapis.Document<defaulDataType.PlayerTierData>
+local savePlayerStats: (player: Player, data: DatabaseTypes.DatabaseTypesTable) -> ()
+local loadPlayerStats: (player: Player) -> Lapis.Document<DatabaseTypes.DatabaseTypesTable>
 local unloadPlayerStats: (player: Player) -> ()
 --#endregion
 
 --#region Functions
-savePlayerStats = function(player: Player, data: defaulDataType.PlayerTierData)
-	local document: Lapis.Document<defaulDataType.PlayerTierData> = documents[player]
+savePlayerStats = function(player: Player, data: DatabaseTypes.DatabaseTypesTable)
+	local document: Lapis.Document<DatabaseTypes.DatabaseTypesTable> = documents[player]
 	document:write(data)
 end
 

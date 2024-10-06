@@ -10,6 +10,7 @@ local Signal = require(ReplicatedStorage.Packages.Signal)
 --#endregion
 
 --#region Features
+local DecorationStats = require(ReplicatedStorage.Data.DecorationStats)
 --#endregion
 
 --#region Data
@@ -23,10 +24,11 @@ export type ModifierItem = {
 
 export type _StatPrototype = {
 	__index: _StatPrototype,
-	new: (StatsName: string, startingValue: number?, isMultiplicativeAdditive: boolean?) -> Stat,
+	new: (StatsName: string, StatTier: number, isMultiplicativeAdditive: boolean?) -> Stat,
 	Reset: (self: Stat) -> (),
 	Add: (self: Stat, value: number) -> (),
-	Change: (self: Stat, value: number) -> (),
+	ChangeValue: (self: Stat, value: number) -> (),
+	ChangeValueByTier: (self: Stat, tier: number) -> (),
 	Connect: (self: Stat, callback: (statName: string, newValue: number, oldValue: number) -> ()) -> () -> (),
 	DisconnectAll: (self: Stat) -> (),
 
@@ -43,9 +45,9 @@ export type _StatPrototype = {
 
 export type _StatData = {
 	StatsName: string,
-	StatValue: number,
-	DefaultValue: number?,
-	FinalValue: number?,
+	StatTier: number,
+	BaseValue: number?,
+	FinalValue: number,
 	isMultiplicativeAdditive: boolean,
 	modifiersList: { [string]: ModifierItem },
 	_connection: Signal.Signal<string, number, number>,
@@ -65,12 +67,13 @@ Stat.__index = Stat
 --- Creates a new Stat
 --- @param StatsName string
 --- @return Stat
-function Stat.new(StatsName: string, startingValue: number?, isMultiplicativeAdditive: boolean?): Stat
+function Stat.new(StatsName: string, StatTier: number, isMultiplicativeAdditive: boolean?): Stat
+	StatTier = StatTier or 0 :: number
 	local _data: _StatData = {
 		StatsName = StatsName,
-		StatValue = startingValue or 0,
-		FinalValue = startingValue or 0,
-		DefaultValue = startingValue or 0,
+		StatTier = StatTier,
+		FinalValue = if StatsName ~= "Currency" then DecorationStats[StatTier :: number][StatsName].Upgrade else 0,
+		BaseValue = if StatsName ~= "Currency" then DecorationStats[0 :: number][StatsName].Upgrade else 0,
 		modifiersList = {},
 		isMultiplicativeAdditive = isMultiplicativeAdditive or false,
 		_connection = Signal(),
@@ -82,21 +85,26 @@ end
 --- Destroys a Stat
 --- @param self Stat
 function Stat:Reset()
-	self.StatValue = self.DefaultValue :: number
-end
-
---- Adds a value to a Stat
---- @param self Stat
---- @param value number
-function Stat:Add(value: number)
-	self.StatValue += value
+	self.FinalValue = self.BaseValue :: number
 end
 
 --- Changes a Stat to a value
 --- @param self Stat
 --- @param value number
-function Stat:Change(value: number)
-	self.StatValue = value
+function Stat:ChangeValue(value: number)
+	local oldFinalValue = self.FinalValue :: number
+	self.FinalValue = value
+	self._connection:Fire(self.StatsName, value, oldFinalValue)
+end
+
+--- Changes a Stat to a value
+--- @param self Stat
+--- @param value number
+function Stat:ChangeValueByTier(tier: number)
+	local oldFinalValue = DecorationStats[self.StatTier][self.StatsName].Upgrade
+	self.StatTier = tier
+	self.FinalValue = DecorationStats[tier][self.StatsName].Upgrade
+	self._connection:Fire(self.StatsName, self.FinalValue, oldFinalValue)
 end
 
 --- Connects a callback to a Stat
@@ -184,7 +192,7 @@ end
 function Stat:UpdateFinalValue(): boolean
 	local oldFinalValue = self.FinalValue :: number
 
-	local finalValue = self.StatValue
+	local finalValue = self.FinalValue :: number
 	if self.isMultiplicativeAdditive then
 		local additive = 0
 		local multiplicative = 1

@@ -16,7 +16,8 @@ local Zap = require(script.Parent.ZapClient)
 
 --#region Data
 local decorationStats = require(ReplicatedStorage.Data.DecorationStats)
-local playerStats = require(script.Parent.PlayerStats)
+local playerStats = require(script.Parent.PlayerTiers)
+local StatsTypes = require(ReplicatedStorage.Types.StatsTypes)
 --#endregion
 
 --#region Types
@@ -30,10 +31,12 @@ local intervalUpgradeText = statsGui:WaitForChild("UpgradeInterval")
 local moveSpeedUpgradeText = statsGui:WaitForChild("UpgradeMoveSpeed")
 local multiplierUpgradeText = statsGui:WaitForChild("UpgradeMultiplier")
 local maxDecorationUpgradeText = statsGui:WaitForChild("UpgradeMaxDecoration")
+local pickupRangeUpgradeText = statsGui:WaitForChild("UpgradePickupRange")
 local buyInterval = statsGui:WaitForChild("BuyInterval") :: TextButton
 local buyMoveSpeed = statsGui:WaitForChild("BuyMoveSpeed")
 local buyMultiplier = statsGui:WaitForChild("BuyMultiplier") :: TextButton
 local buyMaxDecoration = statsGui:WaitForChild("BuyMaxDecoration")
+local buyPickupRange = statsGui:WaitForChild("BuyPickupRange")
 local playerGUI = Players.localPlayer:WaitForChild("PlayerGui")
 local currencyGui = playerGUI:WaitForChild("StatsGui")
 --#endregion
@@ -44,47 +47,56 @@ local update: (data: any) -> ()
 --#endregion
 intervalUpgradeText.Text =
 	`Upgrade Interval\n{decorationStats[0].Interval.Upgrade} -> {decorationStats[1].Interval.Upgrade}\n {decorationStats[1].Interval.Cost} Decorations`
-playerStats.Interval:Change(decorationStats[0].Interval.Upgrade)
+playerStats[StatsTypes.Interval]:ChangeValueByTier(0)
 
 moveSpeedUpgradeText.Text =
 	`Upgrade Movespeed\n{decorationStats[0].MoveSpeed.Upgrade} -> {decorationStats[1].MoveSpeed.Upgrade}\n {decorationStats[1].MoveSpeed.Cost} Decorations`
-playerStats.MoveSpeed:Change(decorationStats[0].MoveSpeed.Upgrade)
+playerStats[StatsTypes.MoveSpeed]:ChangeValueByTier(0)
 
 multiplierUpgradeText.Text =
 	`Upgrade Multiplier\n{decorationStats[0].Multiplier.Upgrade} -> {decorationStats[1].Multiplier.Upgrade}\n {decorationStats[1].Multiplier.Cost} Decorations`
-playerStats.Multiplier:Change(decorationStats[0].Multiplier.Upgrade)
-
+playerStats[StatsTypes.Multiplier]:ChangeValueByTier(0)
 maxDecorationUpgradeText.Text =
 	`Upgrade Max Decoration\n{decorationStats[0].MaxDecorations.Upgrade} -> {decorationStats[1].MaxDecorations.Upgrade}\n {decorationStats[1].MaxDecorations.Cost} Decorations`
-playerStats.MaxDecorations:Change(decorationStats[0].MaxDecorations.Upgrade)
+playerStats[StatsTypes.MaxDecorations]:ChangeValueByTier(0)
+
+pickupRangeUpgradeText.Text =
+	`Upgrade Pickup Range\n{decorationStats[0].PickupRange.Upgrade} -> {decorationStats[1].PickupRange.Upgrade}\n {decorationStats[1].PickupRange.Cost} Decorations`
+playerStats[StatsTypes.PickupRange]:ChangeValueByTier(0)
 
 --#region Functions
 updateCurrency = function(currency: number)
 	local currencyLabel = currencyGui:WaitForChild("Currency")
 	currencyLabel.Text = "Currency: " .. currency
 end
-local function updateIntervalText(data)
+local function updateIntervalText(tier: number)
 	intervalUpgradeText.Text =
-		`Upgrade Interval\n{decorationStats[data.tier].Interval.Upgrade} -> {decorationStats[data.tier + 1].Interval.Upgrade}\n {decorationStats[data.tier + 1].Interval.Cost} Decorations`
-	playerStats.Interval:Change(decorationStats[data.tier].Interval.Upgrade)
+		`Upgrade Interval\n{decorationStats[tier].Interval.Upgrade} -> {decorationStats[tier + 1].Interval.Upgrade}\n {decorationStats[tier + 1].Interval.Cost} Decorations`
+	playerStats[StatsTypes.Interval]:ChangeValueByTier(tier)
 end
 
-local function updateMoveSpeedText(data)
+local function updateMoveSpeedText(tier: number)
 	moveSpeedUpgradeText.Text =
-		`Upgrade Movespeed\n{decorationStats[data.tier].MoveSpeed.Upgrade} -> {decorationStats[data.tier + 1].MoveSpeed.Upgrade}\n {decorationStats[data.tier + 1].MoveSpeed.Cost} Decorations`
-	playerStats.MoveSpeed:Change(decorationStats[data.tier].MoveSpeed.Upgrade)
+		`Upgrade Movespeed\n{decorationStats[tier].MoveSpeed.Upgrade} -> {decorationStats[tier + 1].MoveSpeed.Upgrade}\n {decorationStats[tier + 1].MoveSpeed.Cost} Decorations`
+	playerStats[StatsTypes.MoveSpeed]:ChangeValueByTier(tier)
 end
 
-local function updateMultiplierText(data)
+local function updateMultiplierText(tier: number)
 	multiplierUpgradeText.Text =
-		`Upgrade Multiplier\n{decorationStats[data.tier].Multiplier.Upgrade} -> {decorationStats[data.tier + 1].Multiplier.Upgrade}\n {decorationStats[data.tier + 1].Multiplier.Cost} Decorations`
-	playerStats.Multiplier:Change(decorationStats[data.tier].Multiplier.Upgrade)
+		`Upgrade Multiplier\n{decorationStats[tier].Multiplier.Upgrade} -> {decorationStats[tier + 1].Multiplier.Upgrade}\n {decorationStats[tier + 1].Multiplier.Cost} Decorations`
+	playerStats[StatsTypes.Multiplier]:ChangeValueByTier(tier)
 end
 
-local function updateMaxDecorationsText(data)
+local function updateMaxDecorationsText(tier: number)
 	maxDecorationUpgradeText.Text =
-		`Upgrade MaxDecorations\n{decorationStats[data.tier].MaxDecorations.Upgrade} -> {decorationStats[data.tier + 1].MaxDecorations.Upgrade}\n {decorationStats[data.tier + 1].MaxDecorations.Cost} Decorations`
-	playerStats.MaxDecorations:Change(decorationStats[data.tier].MaxDecorations.Upgrade)
+		`Upgrade MaxDecorations\n{decorationStats[tier].MaxDecorations.Upgrade} -> {decorationStats[tier + 1].MaxDecorations.Upgrade}\n {decorationStats[tier + 1].MaxDecorations.Cost} Decorations`
+	playerStats[StatsTypes.MaxDecorations]:ChangeValueByTier(tier)
+end
+
+local function updatePickupRangeText(tier: number)
+	pickupRangeUpgradeText.Text =
+		`Upgrade Pickup Range\n{decorationStats[tier].PickupRange.Upgrade} -> {decorationStats[tier + 1].PickupRange.Upgrade}\n {decorationStats[tier + 1].PickupRange.Cost} Decorations`
+	playerStats[StatsTypes.PickupRange]:ChangeValueByTier(tier)
 end
 
 buyInterval.MouseButton1Click:Connect(function()
@@ -103,32 +115,43 @@ buyMaxDecoration.MouseButton1Click:Connect(function()
 	Zap.purchaseMaxDecorationsUpgrade.Fire()
 end)
 
+buyPickupRange.MouseButton1Click:Connect(function()
+	Zap.purchasePickupRangeUpgrade.Fire()
+end)
+
 Zap.updateIntervalText.On(function(data)
 	updateCurrency(data.currentCurrency)
-	updateIntervalText(data)
+	updateIntervalText(data.tier)
 end)
 
 Zap.updateMoveSpeedText.On(function(data)
 	updateCurrency(data.currentCurrency)
-	updateMoveSpeedText(data)
+	updateMoveSpeedText(data.tier)
 end)
 
 Zap.updateMultiplierText.On(function(data)
 	updateCurrency(data.currentCurrency)
-	updateMultiplierText(data)
+	updateMultiplierText(data.tier)
 end)
 
 Zap.updateMaxDecorationsText.On(function(data)
 	updateCurrency(data.currentCurrency)
-	updateMaxDecorationsText(data)
+	updateMaxDecorationsText(data.tier)
+end)
+
+Zap.updatePickupRangeText.On(function(data)
+	updateCurrency(data.currentCurrency)
+	updatePickupRangeText(data.tier)
 end)
 
 update = function(data: any)
+	print(data)
 	updateCurrency(data["Currency"])
-	updateIntervalText({ tier = data.Interval })
-	updateMoveSpeedText({ tier = data.MoveSpeed })
-	updateMultiplierText({ tier = data.Multiplier })
-	updateMaxDecorationsText({ tier = data.MaxDecorations })
+	updateIntervalText(data["Interval"])
+	updateMoveSpeedText(data["MoveSpeed"])
+	updateMultiplierText(data["Multiplier"])
+	updateMaxDecorationsText(data["MaxDecorations"])
+	updatePickupRangeText(data["PickupRange"])
 end
 
 Zap.updateCurrency.On(function(data)

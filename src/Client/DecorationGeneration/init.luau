@@ -3,6 +3,7 @@
 --!strict
 --#region Services
 local _RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 -- local Players = game:GetService("Players")
 --#endregion
 
@@ -15,7 +16,8 @@ local PickupZoneHandler = require(script.Parent.PickupZoneHandler)
 --#endregion
 
 --#region Data
-local playerStats = require(script.Parent.PlayerStats)
+local PlayerTiers = require(script.Parent.PlayerTiers)
+local StatsTypes = require(ReplicatedStorage.Types.StatsTypes)
 --#endregion
 
 --#region Types
@@ -38,11 +40,11 @@ UpdateDecoration = function(dt: number)
 	local genAreaSize = GenArea.Size
 	local genAreaPosition = GenArea.Position
 	lastUsed += dt
-	if lastUsed < playerStats.Interval.StatValue then
+	if lastUsed < PlayerTiers[StatsTypes.Interval].FinalValue then
 		return
 	end
-	lastUsed -= playerStats.Interval.StatValue
-	if decorationCount < playerStats.MaxDecorations.StatValue then
+	lastUsed -= PlayerTiers[StatsTypes.Interval].FinalValue
+	if decorationCount < PlayerTiers[StatsTypes.MaxDecorations].FinalValue then
 		local randomX = math.random(genAreaPosition.X - genAreaSize.X / 2, genAreaPosition.X + genAreaSize.X / 2)
 		local randomZ = math.random(genAreaPosition.Z - genAreaSize.Z / 2, genAreaPosition.Z + genAreaSize.Z / 2)
 		local randomY = math.random(genAreaPosition.Y - genAreaSize.Y / 2, genAreaPosition.Y + genAreaSize.Y / 2)
