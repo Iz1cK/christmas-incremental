@@ -4,6 +4,7 @@
 --#region Services
 local _RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 -- local Players = game:GetService("Players")
 --#endregion
 
@@ -13,6 +14,7 @@ local Zap = require(script.Parent.ZapClient)
 
 --#region Features
 local PickupZoneHandler = require(script.Parent.PickupZoneHandler)
+local PickupAnimation = require(ReplicatedStorage.Helpers.PickupAnimation)
 --#endregion
 
 --#region Data
@@ -28,6 +30,7 @@ local GenArea = workspace:WaitForChild("GenArea")
 local decorationCount = 0
 local decorationList = {}
 local lastUsed = 0
+local localPlayer = Players.LocalPlayer
 --#endregion
 
 --#region Function Declerations
@@ -74,11 +77,24 @@ GenerateDecoration = function(position: Vector3)
 			if touchedConnection then
 				touchedConnection:Disconnect()
 			end
+			local currencyCountGUI = localPlayer.PlayerGui.StatsGui.CurrencyBar
+
+			PickupAnimation.executeAnimation({
+				part = decoration,
+				parentGui = localPlayer.PlayerGui.CurrencyPickupGUI,
+				pickupSize = 1500,
+				image = "rbxassetid://125156907889202",
+				endSize = UDim2.new(0, 0, 0, 0),
+				endPos = currencyCountGUI.Position
+					+ UDim2.new(0, currencyCountGUI.Size.X.Offset / 2, 0, currencyCountGUI.Size.Y.Offset / 2),
+				easingDirection = Enum.EasingDirection.Out,
+				easingStyle = Enum.EasingStyle.Linear,
+				duration = 0.75,
+			})
+
 			decorationList[decoration] = nil
 			decorationCount -= 1
-
 			Zap.pickupDecoration.Fire()
-
 			decoration:Destroy()
 		end
 	end)

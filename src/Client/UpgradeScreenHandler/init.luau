@@ -67,7 +67,7 @@ playerStats[StatsTypes.PickupRange]:ChangeValueByTier(0)
 --#region Functions
 updateCurrency = function(currency: number)
 	local currencyLabel = currencyGui:WaitForChild("Currency")
-	currencyLabel.Text = "Currency: " .. currency
+	currencyLabel.Text = currency
 end
 local function updateIntervalText(tier: number)
 	intervalUpgradeText.Text =

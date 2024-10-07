@@ -56,5 +56,8 @@ Players.PlayerRemoving:Connect(function(player: Player)
 end)
 Zap.finishPlayerLoading.On(function(data: any)
 	_UpgradeScreenHandler.update(data)
+	local currencyPickupGUI = Instance.new("ScreenGui")
+	currencyPickupGUI.Name = "CurrencyPickupGUI"
+	currencyPickupGUI.Parent = localPlayer.PlayerGui
 end)
 --#endregion
